@@ -6,6 +6,6 @@ setup(
    description='My personal OneDrive API',
    author='Franz',
    author_email='code@locked.de',
-   packages=['my_onedrive'],  #same as name
+   packages=['my_onedrive'],
    install_requires=['requests']
 )
