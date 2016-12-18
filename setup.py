@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='onedrive',
-   version='0.5',
+   version='0.6',
    description='My personal OneDrive API',
    author='Franz',
    author_email='code@locked.de',
