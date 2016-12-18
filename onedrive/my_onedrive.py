@@ -5,11 +5,11 @@ import os.path
 
 import requests
 
-logger = logging.getLogger('my_onedrive')
+logger = logging.getLogger('onedrive')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-base_url = 'https://api.my_onedrive.com/v1.0'
+base_url = 'https://api.onedrive.com/v1.0'
 
 
 def get_metadata(file, auth):

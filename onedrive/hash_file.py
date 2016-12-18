@@ -3,7 +3,7 @@ import os
 import os.path
 import logging
 
-logger = logging.getLogger('my_onedrive')
+logger = logging.getLogger('onedrive')
 
 def sha1_file(fname):
     """

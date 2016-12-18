@@ -8,7 +8,7 @@ from urllib.parse import parse_qs
 from urllib.parse import urlparse
 from urllib.parse import unquote
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import my_onedrive
+import onedrive
 
 
 class AuthCodeHandler(BaseHTTPRequestHandler):
@@ -33,7 +33,7 @@ class AuthCodeHandler(BaseHTTPRequestHandler):
 
 def get_auth_code(client_id):
     redirect_uri=urllib.parse.quote('http://localhost:8080')
-    scopes=urllib.parse.quote('wl.signin,wl.offline_access,my_onedrive.readwrite')
+    scopes=urllib.parse.quote('wl.signin,wl.offline_access,onedrive.readwrite')
     url = 'https://login.live.com/oauth20_authorize.srf?client_id={client_id}&scope={scope}&response_type=code&redirect_uri={redirect_uri}'.format(
         client_id=client_id,
         scope=scopes,
@@ -63,7 +63,7 @@ def get_tokens(auth_code, client_id, client_secret):
     #     "access_token": "EwA...oAg==",
     #     "expires_in": 3600,
     #     "refresh_token": "MC...Bvg$$",
-    #     "scope": "wl.signin wl.offline_access my_onedrive.readwrite",
+    #     "scope": "wl.signin wl.offline_access onedrive.readwrite",
     #     "token_type": "bearer",
     #     "user_id": "AA...X30"
     # }
@@ -85,7 +85,7 @@ def refresh_tokens(refresh_token, client_id, client_secret):
     #     "access_token": "EwA...Ag==",
     #     "expires_in": 3600,
     #     "refresh_token": "MCfJD..Cpyw$$",
-    #     "scope": "wl.signin wl.offline_access my_onedrive.readwrite",
+    #     "scope": "wl.signin wl.offline_access onedrive.readwrite",
     #     "token_type": "bearer",
     #     "user_id": "AA...j30"
     # }
@@ -100,19 +100,19 @@ def login():
     :return: the auth header required in each oneDrive API call
     """
 
-    keys = my_onedrive.json_io.load('onedrive_keys.json')
+    keys = onedrive.json_io.load('onedrive_keys.json')
     client_id = keys.get('client_id')
     client_secret = keys.get('client_secret')
 
     token_file = 'tokens.json'
     if not os.path.isfile(token_file):
-        auth_code = my_onedrive.auth.get_auth_code(client_id)
-        tokens = my_onedrive.auth.get_tokens(auth_code, client_id, client_secret)
-        my_onedrive.json_io.save(tokens, token_file)
+        auth_code = onedrive.auth.get_auth_code(client_id)
+        tokens = onedrive.auth.get_tokens(auth_code, client_id, client_secret)
+        onedrive.json_io.save(tokens, token_file)
 
-    tokens = my_onedrive.json_io.load(token_file)
-    new_tokens = my_onedrive.auth.refresh_tokens(tokens['refresh_token'], client_id, client_secret)
-    my_onedrive.json_io.save(new_tokens, token_file)
+    tokens = onedrive.json_io.load(token_file)
+    new_tokens = onedrive.auth.refresh_tokens(tokens['refresh_token'], client_id, client_secret)
+    onedrive.json_io.save(new_tokens, token_file)
 
     auth_header = {'Authorization': 'bearer ' + new_tokens['access_token']}
     return auth_header
