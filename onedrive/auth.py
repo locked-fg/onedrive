@@ -8,7 +8,7 @@ from urllib.parse import parse_qs
 from urllib.parse import urlparse
 from urllib.parse import unquote
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import onedrive
+from onedrive import json_io
 
 
 class AuthCodeHandler(BaseHTTPRequestHandler):
@@ -80,15 +80,6 @@ def refresh_tokens(refresh_token, client_id, client_secret):
                       headers={'Content-type': 'application/x-www-form-urlencoded'},
                       data=body)
     j = json.loads(r.text)
-    # print(json.dumps(j, sort_keys=True, indent=4, separators=(',', ': ')))
-    # {
-    #     "access_token": "EwA...Ag==",
-    #     "expires_in": 3600,
-    #     "refresh_token": "MCfJD..Cpyw$$",
-    #     "scope": "wl.signin wl.offline_access onedrive-simple.readwrite",
-    #     "token_type": "bearer",
-    #     "user_id": "AA...j30"
-    # }
     return j
 
 
@@ -100,19 +91,19 @@ def login():
     :return: the auth header required in each oneDrive API call
     """
 
-    keys = onedrive.json_io.load('onedrive_keys.json')
+    keys = json_io.load('onedrive_keys.json')
     client_id = keys.get('client_id')
     client_secret = keys.get('client_secret')
 
     token_file = 'tokens.json'
     if not os.path.isfile(token_file):
-        auth_code = onedrive.auth.get_auth_code(client_id)
-        tokens = onedrive.auth.get_tokens(auth_code, client_id, client_secret)
-        onedrive.json_io.save(tokens, token_file)
+        auth_code = get_auth_code(client_id)
+        tokens = get_tokens(auth_code, client_id, client_secret)
+        json_io.save(tokens, token_file)
 
-    tokens = onedrive.json_io.load(token_file)
-    new_tokens = onedrive.auth.refresh_tokens(tokens['refresh_token'], client_id, client_secret)
-    onedrive.json_io.save(new_tokens, token_file)
+    tokens = json_io.load(token_file)
+    new_tokens = refresh_tokens(tokens['refresh_token'], client_id, client_secret)
+    json_io.save(new_tokens, token_file)
 
     auth_header = {'Authorization': 'bearer ' + new_tokens['access_token']}
     return auth_header
