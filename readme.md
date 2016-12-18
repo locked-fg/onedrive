@@ -1,10 +1,5 @@
-# install
-python setup.py install
+# Install
+Create ```onedrive_keys.json``` by copying and filling ```onedrive_keys.json.sample```.
+Api Key and secret must be setup by through  https://apps.dev.microsoft.com
 
-# Virtualenv:
-virtualenv myenv
-New python executable in myenv\Scripts\python.exe
-Installing setuptools..................done.
-c:\Temp>myenv\Scripts\activate
-
-deactivate
+```python setup.py install```
