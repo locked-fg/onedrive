@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-   name='onedrive-simple',
+   name='onedrive',
    version='0.2',
    description='My personal OneDrive API',
    author='Franz',
    author_email='code@locked.de',
-   packages=['onedrive-simple'],
+   packages=['onedrive'],
    install_requires=['requests']
 )

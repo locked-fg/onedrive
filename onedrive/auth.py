@@ -33,7 +33,7 @@ class AuthCodeHandler(BaseHTTPRequestHandler):
 
 def get_auth_code(client_id):
     redirect_uri=urllib.parse.quote('http://localhost:8080')
-    scopes=urllib.parse.quote('wl.signin,wl.offline_access,onedrive-simple.readwrite')
+    scopes=urllib.parse.quote('wl.signin,wl.offline_access,onedrive.readwrite')
     url = 'https://login.live.com/oauth20_authorize.srf?client_id={client_id}&scope={scope}&response_type=code&redirect_uri={redirect_uri}'.format(
         client_id=client_id,
         scope=scopes,

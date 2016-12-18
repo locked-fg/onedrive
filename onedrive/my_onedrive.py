@@ -5,15 +5,15 @@ import os.path
 
 import requests
 
-logger = logging.getLogger('onedrive-simple')
+logger = logging.getLogger('onedrive')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-base_url = 'https://api.onedrive-simple.com/v1.0'
+base_url = 'https://api.onedrive.com/v1.0'
 
 
 def get_metadata(file, auth):
-    """ https://dev.onedrive-simple.com/items/get.htm """
+    """ https://dev.onedrive.com/items/get.htm """
     r = requests.get(base_url+"/drive/root:" + file, headers=auth)
     return json.loads(r.text)
 
@@ -82,7 +82,7 @@ def get_sha1(file, auth):
 
 
 def copy(src, dst, auth):
-    """Copy a onedrive-simple file. creates target parent directories, replaces target if hashes do not equal
+    """Copy a onedrive file. creates target parent directories, replaces target if hashes do not equal
     TODO improve return type!!!
     :param src:
     :param dst:
