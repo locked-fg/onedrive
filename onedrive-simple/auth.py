@@ -33,7 +33,7 @@ class AuthCodeHandler(BaseHTTPRequestHandler):
 
 def get_auth_code(client_id):
     redirect_uri=urllib.parse.quote('http://localhost:8080')
-    scopes=urllib.parse.quote('wl.signin,wl.offline_access,onedrive.readwrite')
+    scopes=urllib.parse.quote('wl.signin,wl.offline_access,onedrive-simple.readwrite')
     url = 'https://login.live.com/oauth20_authorize.srf?client_id={client_id}&scope={scope}&response_type=code&redirect_uri={redirect_uri}'.format(
         client_id=client_id,
         scope=scopes,
@@ -63,7 +63,7 @@ def get_tokens(auth_code, client_id, client_secret):
     #     "access_token": "EwA...oAg==",
     #     "expires_in": 3600,
     #     "refresh_token": "MC...Bvg$$",
-    #     "scope": "wl.signin wl.offline_access onedrive.readwrite",
+    #     "scope": "wl.signin wl.offline_access onedrive-simple.readwrite",
     #     "token_type": "bearer",
     #     "user_id": "AA...X30"
     # }
@@ -85,7 +85,7 @@ def refresh_tokens(refresh_token, client_id, client_secret):
     #     "access_token": "EwA...Ag==",
     #     "expires_in": 3600,
     #     "refresh_token": "MCfJD..Cpyw$$",
-    #     "scope": "wl.signin wl.offline_access onedrive.readwrite",
+    #     "scope": "wl.signin wl.offline_access onedrive-simple.readwrite",
     #     "token_type": "bearer",
     #     "user_id": "AA...j30"
     # }
