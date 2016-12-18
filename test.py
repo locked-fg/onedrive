@@ -1,6 +1,6 @@
 from onedrive import auth
 from onedrive import hash_file
-from onedrive import my_onedrive as drv
+from onedrive import api as drv
 
 
 def main():

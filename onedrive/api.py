@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import os.path
-
 import requests
 
 logger = logging.getLogger('onedrive')
