@@ -13,6 +13,7 @@ base_url = 'https://api.my_onedrive.com/v1.0'
 
 
 def get_metadata(file, auth):
+    """ https://dev.onedrive.com/items/get.htm """
     r = requests.get(base_url+"/drive/root:" + file, headers=auth)
     return json.loads(r.text)
 
@@ -44,9 +45,8 @@ def mkdir(parent, new_dir, auth):
 
 
 def mkdirs(file, auth):
-    """
-    Ensure file path exist. elements with dots are removed.
-    Could be more elaborate.
+    """Ensure file path exists. Elements with dots are removed.
+    TODO: Could/Should be more elaborate.
     :param file: the file path to be created
     :param auth: the auth header
     :return: true if directories are there, false otherwise
@@ -76,15 +76,18 @@ def delete(file, auth):
         return False
 
 
+def get_sha1(file, auth):
+    m = get_metadata(file, auth)
+    return m.get('file', {}).get('hashes', {}).get('sha1Hash')
+
+
 def copy(src, dst, auth):
-    """
-    Copy a my_onedrive file. If the destination path exists:
-    - same hash: skip and return success
-    - diff hash: replace destination
+    """Copy a onedrive file. creates target parent directories, replaces target if hashes do not equal
+    TODO improve return type!!!
     :param src:
     :param dst:
     :param auth:
-    :return: URL for a AsyncJobStatus or the final URL
+    :return: URL for a AsyncJobStatus or the final URL or None if an error occurs
     """
     header = dict(auth)
     header['Content-Type'] = 'application/json'
@@ -98,21 +101,22 @@ def copy(src, dst, auth):
       "name": dst_file
     })
 
-    # target exists?
     dst_meta = get_metadata(file=dst, auth=auth)
     src_meta = get_metadata(file=src, auth=auth)
-    if dst_meta.get('id') is not None:  # target exists!
-        if dst_meta.get('file') is None:
+    if dst_meta.get('id') is not None:  # target exists
+        if dst_meta.get('file') is None:  # target is not a file
             logger.info("target not a file: deleting \n ", json.dumps(dst_meta, sort_keys=True, indent=4))
             delete(file=dst, auth=auth)
-        else:
-            # compare hashes
-            if src_meta['file']['hashes']['sha1Hash'] == dst_meta['file']['hashes']['sha1Hash']:  # equal
-                logger.info("target file already there (same hash): ignoring")
+        else:                             # destination exists and is a file
+            if src_meta['file']['hashes']['sha1Hash'] == dst_meta['file']['hashes']['sha1Hash']:  # equal Hashes
+                logger.info("target with same hash: returning")
                 return dst
             else:  # hashes are unequal: replace target
-                logger.info("target file already there (different hash): deleting")
+                logger.info("target with different hash: deleting")
                 delete(file=dst, auth=auth)
+
+    logger.info("ensure parent dirs")
+    mkdirs(file=dst, auth=auth)
 
     logger.info("copying file")
     copy_request = requests.post(base_url+'/drive/root:'+src+':/action.copy', headers=header, data=data)
@@ -123,38 +127,3 @@ def copy(src, dst, auth):
     else:
         logger.info("file copy in progress")
         return copy_request.headers['Location']
-
-
-def copy_if_same_hash(auth_header, src, dst, sha1_local):
-    """
-    copy my_onedrive to dst if crc is same as local.
-    also creates intermediate folders
-
-    :param auth_header: auth header to authorize request
-    :param src:  the source base path: '/Backup/last/DigiCam/foo.7z'
-    :param dst:  the destination base path: '/Backup/new/DigiCam/foo.7z'
-    :param sha1_local: the local crc hash
-    :return: monitor URL if copying was triggered or None if no copy was triggered
-    """
-    # my_onedrive file exists?
-    logger.info("checking if source file exists")
-    meta_src = get_metadata(file=src, auth=auth_header)
-    if not meta_src['file']:
-        logger.info("source does not exist: " + src)
-        return None
-
-    # copy only if hashes of local and source files are the same
-    logger.info("comparing hashes")
-    sha1_remote = meta_src['file']['hashes']['sha1Hash'].lower()
-    if sha1_local != sha1_remote:
-        logger.info("hashes are different for " + src)
-        return None
-
-    logger.info("Creating destination directories")
-    dirs_exist = mkdirs(file=dst, auth=auth_header)
-    if not dirs_exist:
-        logger.info("unable to create destination path")
-        return None
-
-    monitor = copy(src, dst, auth_header)
-    return monitor
