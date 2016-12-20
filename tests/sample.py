@@ -1,8 +1,8 @@
-import json
+import logging
 from onedrive import auth
 from onedrive import api
 
-import unittest, time
+import unittest
 
 
 class TestApi(unittest.TestCase):
@@ -50,4 +50,7 @@ class TestApi(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger('onedrive')
+    logger.setLevel(logging.INFO)
+    logger.addHandler(logging.StreamHandler())
     unittest.main()

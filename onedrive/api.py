@@ -1,12 +1,7 @@
 import json
-import logging
 import os
 import os.path
 import requests
-
-logger = logging.getLogger('onedrive')
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
 
 base_url = 'https://api.onedrive.com/v1.0'
 
