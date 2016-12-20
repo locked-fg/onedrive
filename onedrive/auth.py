@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from urllib.parse import unquote
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from onedrive import json_io
+import time
 
 
 class AuthCodeHandler(BaseHTTPRequestHandler):
@@ -83,6 +84,13 @@ def refresh_tokens(refresh_token, client_id, client_secret):
     return j
 
 
+def token_invaild(tokens):
+    created = tokens.get('created', 0)
+    exp = tokens.get('expires_in')*0.9  # * 0.9 to be save ...
+    now = time.time()
+    return created + exp < now
+
+
 def login():
     """
     Try to login to OneDrive and acquire the required tokens.
@@ -90,7 +98,6 @@ def login():
     In the end: return the auth header which needs to be passed to the api calls
     :return: the auth header required in each oneDrive API call
     """
-
     keys = json_io.load('onedrive_keys.json')
     client_id = keys.get('client_id')
     client_secret = keys.get('client_secret')
@@ -99,11 +106,13 @@ def login():
     if not os.path.isfile(token_file):
         auth_code = get_auth_code(client_id)
         tokens = get_tokens(auth_code, client_id, client_secret)
+        tokens['created'] = int(time.time())
         json_io.save(tokens, token_file)
 
     tokens = json_io.load(token_file)
-    new_tokens = refresh_tokens(tokens['refresh_token'], client_id, client_secret)
-    json_io.save(new_tokens, token_file)
+    if token_invaild(tokens):
+        new_tokens = refresh_tokens(tokens['refresh_token'], client_id, client_secret)
+        json_io.save(new_tokens, token_file)
 
     auth_header = {'Authorization': 'bearer ' + new_tokens['access_token']}
     return auth_header
