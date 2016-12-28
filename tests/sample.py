@@ -1,4 +1,7 @@
 import logging
+
+import io
+
 from onedrive import auth
 from onedrive import api
 
@@ -9,6 +12,7 @@ class TestApi(unittest.TestCase):
 
     def test_exists_mkdir(self):
         header = auth.login()
+        api.delete("/api_test", header)
         self.assertFalse(api.exists("/api_test", header))
         self.assertEqual(api.mkdir("/api_test", header).status_code, 201)
         self.assertTrue(api.exists("/api_test", header))
@@ -45,8 +49,46 @@ class TestApi(unittest.TestCase):
         api.delete("/api_test", header)
         api.delete("/api_test2", header)
 
-    # def test_get_sha1(self):
-    #     print("needs test with real file -> needs create file")
+    def test_upload_success(self):
+        header = auth.login()
+        api.mkdir("/api_test", header)
+        dst_file = "/api_test/upload.tmp"
+        self.assertFalse(api.exists(dst_file, header))
+
+        content = "test content".encode("utf-8")
+        res = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(api.exists(dst_file, header))
+
+        api.delete(dst_file, header)
+        pass
+
+    def test_upload_conflict_replace(self):
+        header = auth.login()
+        api.mkdir("/api_test", header)
+        dst_file = "/api_test/upload.tmp"
+        api.delete(dst_file, header)  # just to be sure
+
+        content1 = "test 1".encode("utf-8")
+        res = api.upload_simple(data=content1, dst=dst_file, auth=header)
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(api.exists(dst_file, header))
+
+        api.delete(dst_file, header)
+        pass
+
+    def test_upload_conflict_rename(self):
+        pass
+
+    def test_upload_conflict_fail(self):
+        pass
+
+    def test_download(self):
+        #header = auth.login()
+        #api.mkdir("/api_test", header)
+        #self.assertTrue(api.exists("/api_test/upload.tmp", header))
+
+        pass
 
 
 if __name__ == '__main__':

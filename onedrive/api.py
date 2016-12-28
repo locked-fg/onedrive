@@ -2,9 +2,9 @@ import json
 import os
 import os.path
 import requests
+import urllib.parse
 
 base_url = 'https://api.onedrive.com/v1.0'
-
 
 def exists(file, auth):
     code = requests.get(base_url + "/drive/root:" + file, headers=auth).status_code
@@ -91,6 +91,20 @@ def copy(src, dst, auth):
 
     copy_request = requests.post(base_url+'/drive/root:'+src+':/action.copy', headers=header, data=data)
     return Result(copy_request)
+
+
+def upload_simple(data, dst, auth, conflict="replace"):
+    """ Simple item upload is available for items with less than 100MB of content.
+    see: https://dev.onedrive.com/items/upload.htm
+    :param data: binary stream of data
+    :param dst: upload path
+    :param auth: auth header
+    :param conflict: fail, replace, or rename. The default for PUT is replace
+    :return: 201 Created
+    """
+    url = base_url + "/drive/root:" + dst + ":/content?conflictBehavior="+conflict
+    requ = requests.put(url, data=data, headers=auth)
+    return Result(requ)
 
 
 class Result:
