@@ -93,16 +93,16 @@ def copy(src, dst, auth):
     return Result(copy_request)
 
 
-def upload_simple(data, dst, auth, conflict="replace"):
+def upload_simple(data, dst, auth, conflict='replace'):
     """ Simple item upload is available for items with less than 100MB of content.
     see: https://dev.onedrive.com/items/upload.htm
     :param data: binary stream of data
     :param dst: upload path
     :param auth: auth header
     :param conflict: fail, replace, or rename. The default for PUT is replace
-    :return: 201 Created
+    :return: 201 Created (ok, conflict=renamed), 200 Ok (conflict=replaced), 409 (conflict=fail)
     """
-    url = base_url + "/drive/root:" + dst + ":/content?conflictBehavior="+conflict
+    url = base_url + "/drive/root:" + dst + ":/content?@name.conflictBehavior="+conflict
     requ = requests.put(url, data=data, headers=auth)
     return Result(requ)
 

@@ -53,6 +53,7 @@ class TestApi(unittest.TestCase):
         header = auth.login()
         api.mkdir("/api_test", header)
         dst_file = "/api_test/upload.tmp"
+        api.delete(dst_file, header)
         self.assertFalse(api.exists(dst_file, header))
 
         content = "test content".encode("utf-8")
@@ -60,8 +61,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertTrue(api.exists(dst_file, header))
 
-        api.delete(dst_file, header)
-        pass
+        api.delete("/api_test", header)
 
     def test_upload_conflict_replace(self):
         header = auth.login()
@@ -69,19 +69,50 @@ class TestApi(unittest.TestCase):
         dst_file = "/api_test/upload.tmp"
         api.delete(dst_file, header)  # just to be sure
 
-        content1 = "test 1".encode("utf-8")
-        res = api.upload_simple(data=content1, dst=dst_file, auth=header)
-        self.assertEqual(res.status_code, 201)
-        self.assertTrue(api.exists(dst_file, header))
+        content = "1".encode("utf-8")
+        res1 = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(res1.status_code, 201)
 
-        api.delete(dst_file, header)
-        pass
+        content = ("x"*1000).encode("utf-8")
+        res2 = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(res2.status_code, 200)
+        size = api.get_metadata(dst_file, auth=header).json_body().get('size')
+
+        self.assertEqual(size, 1000)
+        api.delete("/api_test", header)
 
     def test_upload_conflict_rename(self):
-        pass
+        header = auth.login()
+        api.mkdir("/api_test", header)
+        dst_file = "/api_test/upload.tmp"
+        api.delete(dst_file, header)  # just to be sure
+
+        content = "1".encode("utf-8")
+        res1 = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(res1.status_code, 201)
+
+        content = "2".encode("utf-8")
+        res2 = api.upload_simple(data=content, dst=dst_file, auth=header, conflict='rename')
+        self.assertEqual(res2.status_code, 201)  # renamed to upload 1.tmp
+
+        self.assertTrue(api.exists("/api_test/upload 1.tmp", auth=header))
+        api.delete("/api_test", auth=header)
 
     def test_upload_conflict_fail(self):
-        pass
+        header = auth.login()
+        api.mkdir("/api_test", header)
+        dst_file = "/api_test/upload.tmp"
+        api.delete(dst_file, header)  # just to be sure
+
+        content = "1".encode("utf-8")
+        res1 = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(res1.status_code, 201)
+
+        content = "2".encode("utf-8")
+        res2 = api.upload_simple(data=content, dst=dst_file, auth=header, conflict='fail')
+        self.assertEqual(res2.status_code, 409)
+
+        api.delete("/api_test", auth=header)
 
     def test_download(self):
         #header = auth.login()
