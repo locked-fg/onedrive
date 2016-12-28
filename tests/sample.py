@@ -1,10 +1,6 @@
 import logging
-
-import requests
-
 from onedrive import auth
 from onedrive import api
-
 import unittest
 
 
