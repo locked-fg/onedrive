@@ -1,6 +1,6 @@
 import logging
 
-import io
+import requests
 
 from onedrive import auth
 from onedrive import api
@@ -115,11 +115,18 @@ class TestApi(unittest.TestCase):
         api.delete("/api_test", auth=header)
 
     def test_download(self):
-        #header = auth.login()
-        #api.mkdir("/api_test", header)
-        #self.assertTrue(api.exists("/api_test/upload.tmp", header))
+        header = auth.login()
+        api.mkdir("/api_test", header)
+        dst_file = "/api_test/upload.tmp"
+        content = "12345".encode("utf-8")
+        upload_result = api.upload_simple(data=content, dst=dst_file, auth=header)
+        self.assertEqual(upload_result.status_code, 201)
 
-        pass
+        res = api.download(path=dst_file, auth=header)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(content, res.text.encode("utf-8"))
+
+        api.delete("/api_test", auth=header)
 
 
 if __name__ == '__main__':

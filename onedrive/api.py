@@ -107,6 +107,18 @@ def upload_simple(data, dst, auth, conflict='replace'):
     return Result(requ)
 
 
+def download(path, auth):
+    """ download a File Facet. No range downloads yet
+    See: https://dev.onedrive.com/items/download.htm
+    :param path: download this
+    :param auth: auth header
+    :return: 200 with file, maybe also 302 Found + Location with the download URL which does NOT req. authentication
+    """
+    url = base_url + "/drive/root:" + path + ":/content"
+    requ = requests.get(url, headers=auth)
+    return Result(requ)
+
+
 class Result:
 
     def __init__(self, response):
