@@ -2,9 +2,9 @@ import json
 import os
 import os.path
 import requests
-import urllib.parse
 
 base_url = 'https://api.onedrive.com/v1.0'
+
 
 def exists(file, auth):
     code = requests.get(base_url + "/drive/root:" + file, headers=auth).status_code
