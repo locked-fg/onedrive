@@ -124,6 +124,21 @@ class TestApi(unittest.TestCase):
 
         api.delete("/api_test", auth=header)
 
+    def test_move(self):
+        header = auth.login()
+        api.mkdir("/api_test_src", header)
+        api.mkdir("/api_test_dst", header)
+        src_file = "/api_test_src/upload.tmp"
+        api.upload_simple(data="1".encode("utf-8"), dst=src_file, auth=header)
+
+        res = api.move(src_file, "/api_test_dst", auth=header)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(api.exists(src_file, auth=header))
+        self.assertTrue(api.exists("/api_test_dst/upload.tmp", auth=header))
+
+        api.delete("/api_test_src", header)
+        api.delete("/api_test_dst", header)
+
 
 if __name__ == '__main__':
     logger = logging.getLogger('onedrive')

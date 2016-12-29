@@ -11,14 +11,20 @@ def exists(file, auth):
     return code == 200
 
 
-def get_metadata(file, auth):
+def get_metadata(file, auth, select=None):
     """
     get the metadata for the given path: https://dev.onedrive.com/items/get.htm
+    https://dev.onedrive.com/odata/optional-query-parameters.htm
     :param file:
     :param auth:
+    :param select: select only these properties or None for all
     :return: :rtype: Result with code 200 + json if all is okay
     """
-    res = requests.get(base_url+"/drive/root:" + file, headers=auth)
+    if select:
+        q = "?select=" + select
+    else:
+        q = ""
+    res = requests.get(base_url + "/drive/root:" + file + q, headers=auth)
     return Result(res)
 
 
@@ -48,12 +54,12 @@ def mkdir(new_dir, auth, parents=False):
         parent_meta = get_metadata(file=parent, auth=auth)
 
     parent_id = dict(parent_meta.json_body()).get('id', '00000000')
-    res = requests.post(base_url+"/drive/items/"+parent_id+"/children", headers=headers, data=data)
+    res = requests.post(base_url + "/drive/items/" + parent_id + "/children", headers=headers, data=data)
     return Result(res)
 
 
 def delete(file, auth):
-    return Result(requests.delete(base_url+"/drive/root:"+file, headers=auth))
+    return Result(requests.delete(base_url + "/drive/root:" + file, headers=auth))
 
 
 def get_sha1(file, auth):
@@ -83,13 +89,13 @@ def copy(src, dst, auth):
     dst_path, dst_file = os.path.split(dst)
     dst_path = dst_path[1:]  # remove the leading slash
     data = json.dumps({
-      "parentReference": {
-        "path": "/drive/root:" + dst_path
-      },
-      "name": dst_file
+        "parentReference": {
+            "path": "/drive/root:" + dst_path
+        },
+        "name": dst_file
     })
 
-    copy_request = requests.post(base_url+'/drive/root:'+src+':/action.copy', headers=header, data=data)
+    copy_request = requests.post(base_url + '/drive/root:' + src + ':/action.copy', headers=header, data=data)
     return Result(copy_request)
 
 
@@ -102,7 +108,7 @@ def upload_simple(data, dst, auth, conflict='replace'):
     :param conflict: fail, replace, or rename. The default for PUT is replace
     :return: 201 Created (ok, conflict=renamed), 200 Ok (conflict=replaced), 409 (conflict=fail)
     """
-    url = base_url + "/drive/root:" + dst + ":/content?@name.conflictBehavior="+conflict
+    url = base_url + "/drive/root:" + dst + ":/content?@name.conflictBehavior=" + conflict
     requ = requests.put(url, data=data, headers=auth)
     return Result(requ)
 
@@ -119,8 +125,32 @@ def download(path, auth):
     return Result(requ)
 
 
-class Result:
+def move(src, dst, auth):
+    """move a file: https://dev.onedrive.com/items/move.htm
+     :param src: the file to move. /foo/bar.tgz
+     :param dst: the target directory. /bar
+     :return: 200, As with other PATCH actions, the entire item object will be included in the response.
+    """
+    header = dict(auth)
+    header['Content-Type'] = 'application/json'
 
+    # When moving items to the root of a OneDrive you cannot use the
+    # "id:" "root" syntax. You either need to use the real ID of the root folder,
+    # or use {"path": "/drive/root"} for the parent reference.
+    if dst == "/":
+        dst_path = "/drive/root"
+    else:
+        dst_path = "/drive/root:" + dst
+    data = json.dumps({
+        "parentReference": {
+            "path": dst_path
+        }
+    })
+    res = requests.patch(base_url + '/drive/root:' + src, headers=header, data=data)
+    return Result(res)
+
+
+class Result:
     def __init__(self, response):
         self.status_code = response.status_code
         self.text = response.text
@@ -130,7 +160,7 @@ class Result:
         return json.loads(self.text)
 
     def to_string(self):
-        str_header = "\n\t".join([str(k)+":"+str(v) for k,v in self.headers.items()])
+        str_header = "\n\t".join([str(k) + ":" + str(v) for k, v in self.headers.items()])
         return """
 status_code: {code},
 headers:
