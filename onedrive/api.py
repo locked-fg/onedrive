@@ -156,6 +156,25 @@ def move(src, dst, auth):
     return Result(res)
 
 
+def rename(src, dst, auth):
+    """
+    renames a file/directory
+    :param src: full path
+    :param dst: new name (basename only! file/dir stays in the same dir!)
+    :param auth:
+    :return: 200 OK
+    """
+    header = dict(auth)
+    header['Content-Type'] = 'application/json'
+
+    # When moving items to the root of a OneDrive you cannot use the
+    # "id:" "root" syntax. You either need to use the real ID of the root folder,
+    # or use {"path": "/drive/root"} for the parent reference.
+    data = json.dumps({"name": dst})
+    res = requests.patch(base_url + '/drive/root:' + src, headers=header, data=data)
+    return Result(res)
+
+
 class Result:
     def __init__(self, response):
         self.status_code = response.status_code
