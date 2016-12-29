@@ -9,10 +9,10 @@ class TestApi(unittest.TestCase):
     def test_exists_mkdir(self):
         header = auth.login()
         api.delete("/api_test", header)
-        self.assertFalse(api.exists("/api_test", header))
+
         self.assertEqual(api.mkdir("/api_test", header).status_code, 201)
         self.assertTrue(api.exists("/api_test", header))
-        # clean up
+
         self.assertEqual(api.delete("/api_test", header).status_code, 204)
 
     def test_get_meta(self):
@@ -23,11 +23,12 @@ class TestApi(unittest.TestCase):
 
     def test_mkdir_parents(self):
         header = auth.login()
+
         res = api.mkdir("/api_test/foo/bar/foobar", header, parents=False)
         self.assertEqual(res.status_code, 400)
         res = api.mkdir("/api_test/foo/bar/foobar", header, parents=True)
         self.assertEqual(res.status_code, 201)
-        # clean up
+
         self.assertEqual(api.delete("/api_test", header).status_code, 204)
 
     def test_delete(self):
