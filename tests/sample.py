@@ -1,7 +1,9 @@
 import logging
 from onedrive import auth
 from onedrive import api
+from onedrive.api import AsyncOperationStatus
 import unittest
+import time
 
 
 class TestApi(unittest.TestCase):
@@ -36,15 +38,38 @@ class TestApi(unittest.TestCase):
         api.mkdir("/api_test", header)
         self.assertEqual(api.delete("/api_test", header).status_code, 204)
 
-    def test_copy(self):
+    def test_copy_dir(self):
         header = auth.login()
         api.mkdir("/api_test", header)
         self.assertTrue(api.exists("/api_test", header))
         res = api.copy("/api_test", "/api_test2", header)
         self.assertEqual(res.status_code, 202)
         self.assertIsNotNone(res.headers.get('Location', None))
+
         api.delete("/api_test", header)
         api.delete("/api_test2", header)
+
+    def test_copy_file(self):
+        header = auth.login()
+        api.delete("/api_test", header)
+        api.mkdir("/api_test/x", header, parents=True)
+        self.assertTrue(api.exists("/api_test", header))
+        self.assertTrue(api.exists("/api_test/x", header))
+
+        content = "1".encode("utf-8")
+        api.upload_simple(data=content, dst="/api_test/foo.tmp", auth=header)
+        self.assertTrue(api.exists("/api_test/foo.tmp", auth=header))
+
+        res = api.copy("/api_test/foo.tmp", "/api_test/x/foo2.tmp", header)
+        self.assertEqual(res.status_code, 202)
+        location = res.headers.get('Location', None)
+        self.assertIsNotNone(location)
+        AsyncOperationStatus(location, header).block()
+
+        self.assertTrue(api.exists("/api_test/foo.tmp", auth=header))
+        self.assertTrue(api.exists("/api_test/x/foo2.tmp", auth=header))
+
+        api.delete("/api_test", header)
 
     def test_upload_success(self):
         header = auth.login()

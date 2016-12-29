@@ -2,6 +2,7 @@ import json
 import os
 import os.path
 import requests
+import time
 
 base_url = 'https://api.onedrive.com/v1.0'
 
@@ -93,7 +94,9 @@ def copy(src, dst, auth):
     header['Prefer'] = 'respond-async'
 
     dst_path, dst_file = os.path.split(dst)
-    dst_path = dst_path[1:]  # remove the leading slash
+    if dst_path == "/":
+        dst_path = ""
+
     data = json.dumps({
         "parentReference": {
             "path": "/drive/root:" + dst_path
@@ -193,3 +196,52 @@ headers:
 text: {text}""".format(code=self.status_code,
                        headers=str_header,
                        text=json.dumps(self.json_body(), indent=2))
+
+
+class AsyncOperationStatus:
+    """https://dev.onedrive.com/resources/asyncJobStatus.htm"""
+    refresh_delay = 0.5
+
+    def __init__(self, location, auth):
+        self.location = location
+        self.auth = auth
+
+        self.operation = None
+        self.status = None
+        self.response = None  # the final response
+        self.percentageComplete = 0.0
+
+        self.refresh()
+
+    def refresh(self):
+        req = requests.get(self.location, headers=self.auth)
+        if req.history:  # it is the redirected response already
+            self.operation = None
+            self.percentageComplete = 100
+            self.status = 'completed'
+            self.response = req
+        else:
+            data = json.loads(req.text)
+            self.operation = data.get('operation', None)
+            self.percentageComplete = data.get('percentageComplete', 0.0)
+            self.status = data.get('status', None)
+
+    def operation(self):
+        return self.operation
+
+    def complete(self):
+        return self.percentageComplete
+
+    def status(self):
+        """
+        :return:  notStarted | inProgress | completed | updating | failed | deletePending | deleteFailed | waiting
+        """
+        return self.status
+
+    def response(self):
+        return self.response
+
+    def block(self):
+        while self.percentageComplete < 100:
+            time.sleep(AsyncOperationStatus.refresh_delay)  # wait this many sec
+            self.refresh()
