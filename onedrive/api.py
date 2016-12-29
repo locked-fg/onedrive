@@ -59,6 +59,12 @@ def mkdir(new_dir, auth, parents=False):
 
 
 def delete(file, auth):
+    """
+    Deletes file.
+    :param file:
+    :param auth:
+    :return:  204 No Content
+    """
     return Result(requests.delete(base_url + "/drive/root:" + file, headers=auth))
 
 
