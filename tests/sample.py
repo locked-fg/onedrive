@@ -3,7 +3,6 @@ from onedrive import auth
 from onedrive import api
 from onedrive.api import AsyncOperationStatus
 import unittest
-import time
 
 
 class TestApi(unittest.TestCase):
