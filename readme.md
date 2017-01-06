@@ -2,18 +2,16 @@
 
 This is a more basic version of the official [OneDrive-Python-API](https://github.com/OneDrive/onedrive-sdk-python). This project is intended to abstract login etc and 
 make interaction with OneDrive as easy as possible.
-This Library uses the REST endpoints as documented in the [OneDrive API Docs](https://dev.onedrive.com/README.htm). 
+This library uses the REST endpoints as documented in the [OneDrive API Docs](https://dev.onedrive.com/README.htm). 
 
-The library was built with Python3. Downwards compatibility to Python 2 was and still is not yet 
-subject of development. 
+The library was built with Python3 for pure personal use. So downwards compatibility to Python 2 was and still is 
+not (yet) subject of development.
 
 ## Install and setup
 - Clone this repo
-- call ```python setup.py install``` to build & install the library 
-
-Setup:
-- Api key and API secret must be setup by through [https://apps.dev.microsoft.com](https://apps.dev.microsoft.com)
-- save key and secret to [onedrive_keys.json](onedrive_keys.json.sample) 
+- Call ```python setup.py install``` to build and install the library 
+- Acquire Api key and API through [https://apps.dev.microsoft.com](https://apps.dev.microsoft.com)
+- Save Api key and secret to [onedrive_keys.json](onedrive_keys.json.sample) 
 
 ## Interact
 See [tests/test_api.py](tests/test_api.py) for working code. The tests should be pretty self explanatory.
@@ -53,3 +51,5 @@ api.delete("/api_test", header)
 Please have a look at [tests/test_api.py](tests/test_api.py).
 All methods are documented there.
 
+# License
+The project is licensed under the [MIT License](LICENSE).
