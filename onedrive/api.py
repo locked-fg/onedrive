@@ -84,6 +84,7 @@ def is_dir_meta(meta):
 
 def copy(src, dst, auth):
     """Copy a onedrive file
+    https://dev.onedrive.com/items/copy.htm
     :param src:
     :param dst:
     :param auth:
