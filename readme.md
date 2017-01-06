@@ -29,10 +29,15 @@ each session.
 
 ### Copy file
 ```
+from onedrive import auth
+from onedrive import api
+
 header = auth.login()  # log in (open broeser or reuse login from tokens.json)
 api.mkdir("/api_test/x", header, parents=True)  # create dir 
+
 content = "1".encode("utf-8")
 api.upload_simple(data=content, dst="/api_test/foo.tmp", auth=header)  # upload a new file 
+
 res = api.copy("/api_test/foo.tmp", "/api_test/x/foo2.tmp", header)  # copy the file
 ```
 
