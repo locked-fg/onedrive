@@ -4,3 +4,4 @@ dist/
 onedrive.egg-info/
 tokens.json
 onedrive_keys.json
+/onedrive/__pycache__
