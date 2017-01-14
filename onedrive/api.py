@@ -70,8 +70,14 @@ def delete(file, auth):
 
 
 def get_sha1(file, auth):
-    m = get_metadata(file, auth).json_body()
-    return m.get('file', {}).get('hashes', {}).get('sha1Hash')
+    """
+    return the sha1 or None
+    :param file: file to check
+    :param auth:
+    :return: the sha1 string (in UPPER cases) or None
+    """
+    m = get_metadata(file, auth, select='file').json_body()
+    return m.get('file', {}).get('hashes', {}).get('sha1Hash', None)
 
 
 def is_file_meta(meta):
