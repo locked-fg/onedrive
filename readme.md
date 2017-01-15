@@ -51,5 +51,13 @@ api.delete("/api_test", header)
 Please have a look at [tests/test_api.py](tests/test_api.py).
 All methods are documented there.
 
+# Throttling
+This part is copied from [OneDrive API README](https://dev.onedrive.com/README.htm):
+OneDrive has limits in place to make sure that individuals and apps do not adversely affect the experience of other users. When an activity exceeds OneDrive's limits, API requests will be rejected for a period of time. OneDrive may also return a Retry-After header with the number of seconds your app should wait before sending more requests.
+```
+HTTP/1.1 429 Too Many Requests  
+Retry-After: 3600
+```
+
 # License
 The project is licensed under the [MIT License](LICENSE).
