@@ -59,15 +59,7 @@ def get_tokens(auth_code, client_id, client_secret):
                       headers={'Content-type': 'application/x-www-form-urlencoded'},
                       data=body)
     j = json.loads(r.text)
-    # print(json.dumps(j, sort_keys=True, indent=4, separators=(',', ': ')))
-    # {
-    #     "access_token": "EwA...oAg==",
-    #     "expires_in": 3600,
-    #     "refresh_token": "MC...Bvg$$",
-    #     "scope": "wl.signin wl.offline_access onedrive-simple.readwrite",
-    #     "token_type": "bearer",
-    #     "user_id": "AA...X30"
-    # }
+    j['created'] = int(time.time())
     return j
 
 
@@ -81,6 +73,7 @@ def refresh_tokens(refresh_token, client_id, client_secret):
                       headers={'Content-type': 'application/x-www-form-urlencoded'},
                       data=body)
     j = json.loads(r.text)
+    j['created'] = int(time.time())
     return j
 
 
@@ -106,13 +99,12 @@ def login():
     if not os.path.isfile(token_file):
         auth_code = get_auth_code(client_id)
         tokens = get_tokens(auth_code, client_id, client_secret)
-        tokens['created'] = int(time.time())
         json_io.save(tokens, token_file)
 
     tokens = json_io.load(token_file)
     if token_invaild(tokens):
-        new_tokens = refresh_tokens(tokens['refresh_token'], client_id, client_secret)
-        json_io.save(new_tokens, token_file)
+        tokens = refresh_tokens(tokens['refresh_token'], client_id, client_secret)
+        json_io.save(tokens, token_file)
 
-    auth_header = {'Authorization': 'bearer ' + new_tokens['access_token']}
+    auth_header = {'Authorization': 'bearer ' + tokens['access_token']}
     return auth_header
