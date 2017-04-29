@@ -13,7 +13,7 @@ not (yet) subject of development.
 - Acquire Api key and API through [https://apps.dev.microsoft.com](https://apps.dev.microsoft.com)
 - Save Api key and secret to [onedrive_keys.json](onedrive_keys.json.sample) 
 
-## Interact
+## Interact / Examples / How To
 See [tests/test_api.py](tests/test_api.py) for working code. The tests should be pretty self explanatory.
 
 ### Login: 
@@ -50,6 +50,11 @@ api.delete("/api_test", header)
 ### Other operations (upload, download, copy, move, get meta data)
 Please have a look at [tests/test_api.py](tests/test_api.py).
 All methods are documented there.
+
+# TODO
+- save URLs of long running tasks: https://dev.onedrive.com/misc/long-running-actions.htm
+- list status of long running tasks
+- CLI 
 
 # Throttling
 This part is copied from [OneDrive API README](https://dev.onedrive.com/README.htm):
