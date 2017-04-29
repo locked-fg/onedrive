@@ -1,2 +1,4 @@
+0.8.10:
+- fixed  to_string() error in result object
 0.8.9:
 - made get_sha1() more robust & more efficient
