@@ -3,7 +3,7 @@ from onedrive import auth
 from onedrive import api
 from onedrive.api import AsyncOperationStatus
 import unittest
-
+import requests
 
 class TestApi(unittest.TestCase):
 
@@ -157,6 +157,36 @@ class TestApi(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertFalse(api.exists(src_file, auth=self.header))
         self.assertTrue(api.exists("/api_test/renamed.tmp", auth=self.header))
+
+    def test_list_children(self):
+        # 2 files, 1 dir
+        api.upload_simple(data="1".encode("utf-8"), dst="/api_test/upload1.tmp", auth=self.header)
+        api.upload_simple(data="2".encode("utf-8"), dst="/api_test/upload2.tmp", auth=self.header)
+        api.mkdir("/api_test/foo", auth=self.header)
+
+        res = api.list_children("/api_test", self.header)
+        self.assertEqual(res.status_code, 200)
+
+        jb = res.json_body()
+        entities = jb['value']
+        self.assertEqual(len(entities), 3)
+        files = [f for f in entities if 'file' in f]
+        folders = [f for f in entities if 'folder' in f]
+        self.assertEqual(len(files), 2)
+        self.assertEqual(len(folders), 1)
+
+    def test_list_children_paging(self):
+        # 4 dirs
+        api.mkdir("/api_test/foo1", auth=self.header)
+        api.mkdir("/api_test/foo2", auth=self.header)
+        api.mkdir("/api_test/foo3", auth=self.header)
+        api.mkdir("/api_test/foo4", auth=self.header)
+
+        # this is a lack: we have to rely on max_results being interpreted ...
+        res = api.list_children("/api_test", self.header, max_results=2)
+        self.assertEqual(res.status_code, 200)
+        jb = res.json_body()
+        self.assertEqual(len(jb['value']), 4)
 
 
 if __name__ == '__main__':

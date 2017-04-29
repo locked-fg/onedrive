@@ -185,10 +185,38 @@ def rename(src, dst, auth):
     return Result(res)
 
 
+def list_children(path, auth, max_results=1024):
+    """
+    List children for an item: https://dev.onedrive.com/items/list.htm
+    Paging is resolved by this method already.
+    :param path: full path
+    :param auth: 
+    :param max_results: limit before paging occurs. (for testing only)
+    :return: json, mapping value -> List of driveItems: https://dev.onedrive.com/resources/item.htm  
+    """
+    res = requests.get(base_url + "/drive/root:" + path + ":/children?top=" + str(max_results), headers=auth)
+    body = Result(res).json_body()
+    value = body['value']
+
+    while '@odata.nextLink' in body:  # page as long as there is a next link
+        res = requests.get(body['@odata.nextLink'], headers=auth)
+        body = Result(res).json_body()
+        value.extend(body['value'])
+
+    return Result(res, json.dumps({'value': value}))
+
+
 class Result:
-    def __init__(self, response):
+    def __init__(self, response, text=None):
+        """
+        :param response: the response from requests 
+        :param text: optional text, otherwise response.text is used
+        """
         self.status_code = response.status_code
-        self.text = response.text
+        if not text:
+            self.text = response.text
+        else:
+            self.text = text
         self.headers = response.headers
 
     def json_body(self):
@@ -256,3 +284,5 @@ class AsyncOperationStatus:
         while self.percentageComplete < 100:
             time.sleep(AsyncOperationStatus.refresh_delay)  # wait this many sec
             self.refresh()
+
+
