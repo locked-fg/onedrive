@@ -8,7 +8,7 @@ base_url = 'https://api.onedrive.com/v1.0'
 
 
 def exists(file, auth):
-    code = requests.get(base_url + "/drive/root:" + file, headers=auth).status_code
+    code = get_metadata(file, auth, 'id').status_code
     return code == 200
 
 
