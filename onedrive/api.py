@@ -192,7 +192,11 @@ class Result:
         self.headers = response.headers
 
     def json_body(self):
-        return json.loads(self.text)
+        from json import JSONDecodeError
+        try:
+            return json.loads(self.text)
+        except JSONDecodeError:
+            return self.text
 
     def to_string(self):
         str_header = "\n\t".join([str(k) + ":" + str(v) for k, v in self.headers.items()])
